@@ -335,6 +335,11 @@
             gap: 15px;
             padding: 10px 0;
             -webkit-overflow-scrolling: touch;
+            scrollbar-width: none; /* Firefox */
+        }
+
+        .price-ticker::-webkit-scrollbar {
+            display: none; /* Chrome, Safari, Opera */
         }
 
         .price-item {
@@ -343,6 +348,22 @@
             border-radius: 12px;
             font-size: 14px;
             white-space: nowrap;
+            flex-shrink: 0;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+        .price-item.up {
+            color: #4CAF50;
+        }
+
+        .price-item.down {
+            color: #ff4757;
+        }
+
+        .price-arrow {
+            font-size: 12px;
         }
 
         .app-nav {
@@ -606,6 +627,7 @@
             font-size: 12px;
             color: rgba(255, 255, 255, 0.6);
             margin-top: 5px;
+            display: none; /* Hidden initially as per requirements */
         }
 
         /* Buy Tickets Section */
@@ -647,9 +669,10 @@
         }
 
         .countdown-timer {
+            font-size: 16px;
             font-weight: bold;
-            color: var(--accent-color);
             margin-top: 10px;
+            color: var(--accent-color);
         }
 
         @media (max-width: 480px) {
@@ -697,12 +720,55 @@
     </div>
 
     <div class="price-ticker" id="price-ticker">
-        <div class="price-item">BTC: $<span id="btc-price">...</span></div>
-        <div class="price-item">ETH: $<span id="eth-price">...</span></div>
-        <div class="price-item">BNB: $<span id="bnb-price">...</span></div>
-        <div class="price-item">SOL: $<span id="sol-price">...</span></div>
-        <div class="price-item">TON: $<span id="ton-price">...</span></div>
-        <div class="price-item">LOT: $<span id="lot-price">0.00026</span></div>
+        <div class="price-item">
+            BTC: $<span id="btc-price">...</span>
+            <span class="price-arrow" id="btc-arrow"></span>
+        </div>
+        <div class="price-item">
+            ETH: $<span id="eth-price">...</span>
+            <span class="price-arrow" id="eth-arrow"></span>
+        </div>
+        <div class="price-item">
+            BNB: $<span id="bnb-price">...</span>
+            <span class="price-arrow" id="bnb-arrow"></span>
+        </div>
+        <div class="price-item">
+            SOL: $<span id="sol-price">...</span>
+            <span class="price-arrow" id="sol-arrow"></span>
+        </div>
+        <div class="price-item">
+            TON: $<span id="ton-price">...</span>
+            <span class="price-arrow" id="ton-arrow"></span>
+        </div>
+        <div class="price-item">
+            LOT: $<span id="lot-price">0.00016</span>
+            <span class="price-arrow" id="lot-arrow"></span>
+        </div>
+        <!-- Duplicate items to create continuous scrolling effect -->
+        <div class="price-item">
+            BTC: $<span id="btc-price-2">...</span>
+            <span class="price-arrow" id="btc-arrow-2"></span>
+        </div>
+        <div class="price-item">
+            ETH: $<span id="eth-price-2">...</span>
+            <span class="price-arrow" id="eth-arrow-2"></span>
+        </div>
+        <div class="price-item">
+            BNB: $<span id="bnb-price-2">...</span>
+            <span class="price-arrow" id="bnb-arrow-2"></span>
+        </div>
+        <div class="price-item">
+            SOL: $<span id="sol-price-2">...</span>
+            <span class="price-arrow" id="sol-arrow-2"></span>
+        </div>
+        <div class="price-item">
+            TON: $<span id="ton-price-2">...</span>
+            <span class="price-arrow" id="ton-arrow-2"></span>
+        </div>
+        <div class="price-item">
+            LOT: $<span id="lot-price-2">0.00016</span>
+            <span class="price-arrow" id="lot-arrow-2"></span>
+        </div>
     </div>
 
     <!-- Home Page (Default) -->
@@ -813,6 +879,10 @@
                     <button class="btn btn-admin" id="simulate-loss">Simulate Loss</button>
                     <button class="btn btn-admin" id="open-exchange">Open Exchange</button>
                     <button class="btn btn-admin" id="close-exchange">Close Exchange</button>
+                    <div class="admin-input-group">
+                        <input type="datetime-local" class="admin-input" id="launch-date" placeholder="Set launch date">
+                        <button class="btn btn-admin" id="set-launch-date">Set Launch</button>
+                    </div>
                 </div>
             </div>
         </div>
@@ -847,11 +917,10 @@
         <div class="section">
             <h2 class="section-title">Exchange LOT</h2>
             <p id="exchange-status-message">Exchange is currently closed. Please check back later.</p>
-            <div id="exchange-countdown" class="countdown-timer"></div>
             
             <div class="exchange-form">
                 <div class="exchange-rate">
-                    Current rate: 1 LOT = $<span id="current-lot-price">0.00026</span>
+                    Current rate: 1 LOT = $<span id="current-lot-price">0.00016</span>
                 </div>
                 
                 <div class="exchange-input-group">
@@ -863,7 +932,7 @@
                     <input type="number" class="exchange-input" id="ton-amount" placeholder="TON amount" readonly>
                 </div>
                 
-                <div id="exchange-preview" class="exchange-preview" style="display: none;">
+                <div id="exchange-preview" class="exchange-preview">
                     You will receive: <span id="exchange-receive">0</span> TON
                     <div class="exchange-fee">Gas fee: $0.5 (≈<span id="exchange-fee-ton">0</span> TON)</div>
                 </div>
@@ -874,6 +943,7 @@
                     <h4>Pending Exchange</h4>
                     <p>You have <span id="pending-lot-amount">0</span> LOT pending exchange.</p>
                     <p>This will be processed during the next exchange window.</p>
+                    <div class="countdown-timer" id="countdown-timer"></div>
                 </div>
             </div>
         </div>
@@ -897,7 +967,7 @@
     <script>
         // Game State
         const gameState = {
-            lotBalance: 0,
+            lotBalance: 0, // Changed from 12000 to 0 as requested
             tickets: 20,
             scratchCards: 0,
             referrals: 0,
@@ -912,14 +982,15 @@
             isAdmin: false, // Set to true to enable admin features
             exchangeOpen: false,
             pendingExchangeAmount: 0,
+            launchDate: null, // Will be set by admin
             settings: {
                 baseWinRate: 0.6,
                 scratchWinRate: 0.6,
                 dailyTicketLimit: 100,
-                lotPrice: 0.00026, // Updated to 0.00026
-                exchangeFee: 0.5, // $0.5 exchange fee
-                exchangeLaunchTime: new Date(Date.now() + 76 * 60 * 60 * 1000) // 76 hours from now
-            }
+                lotPrice: 0.00016, // Changed from 0.00026 to 0.00016 as requested
+                exchangeFee: 0.5 // $0.5 exchange fee
+            },
+            previousPrices: {} // To track price changes
         };
 
         // Stage Information (All 16 stages)
@@ -991,7 +1062,25 @@
                 bnb: document.getElementById('bnb-price'),
                 sol: document.getElementById('sol-price'),
                 ton: document.getElementById('ton-price'),
-                lot: document.getElementById('lot-price')
+                lot: document.getElementById('lot-price'),
+                btc2: document.getElementById('btc-price-2'),
+                eth2: document.getElementById('eth-price-2'),
+                bnb2: document.getElementById('bnb-price-2'),
+                sol2: document.getElementById('sol-price-2'),
+                ton2: document.getElementById('ton-price-2'),
+                lot2: document.getElementById('lot-price-2'),
+                btcArrow: document.getElementById('btc-arrow'),
+                ethArrow: document.getElementById('eth-arrow'),
+                bnbArrow: document.getElementById('bnb-arrow'),
+                solArrow: document.getElementById('sol-arrow'),
+                tonArrow: document.getElementById('ton-arrow'),
+                lotArrow: document.getElementById('lot-arrow'),
+                btcArrow2: document.getElementById('btc-arrow-2'),
+                ethArrow2: document.getElementById('eth-arrow-2'),
+                bnbArrow2: document.getElementById('bnb-arrow-2'),
+                solArrow2: document.getElementById('sol-arrow-2'),
+                tonArrow2: document.getElementById('ton-arrow-2'),
+                lotArrow2: document.getElementById('lot-arrow-2')
             },
             
             // Page elements
@@ -1004,7 +1093,6 @@
             
             // Exchange elements
             exchangeStatusMessage: document.getElementById('exchange-status-message'),
-            exchangeCountdown: document.getElementById('exchange-countdown'),
             lotAmount: document.getElementById('lot-amount'),
             tonAmount: document.getElementById('ton-amount'),
             maxLot: document.getElementById('max-lot'),
@@ -1015,6 +1103,7 @@
             exchangePreview: document.getElementById('exchange-preview'),
             exchangeReceive: document.getElementById('exchange-receive'),
             exchangeFeeTon: document.getElementById('exchange-fee-ton'),
+            countdownTimer: document.getElementById('countdown-timer'),
             
             // Admin elements
             adminPanel: document.getElementById('admin-panel'),
@@ -1034,7 +1123,9 @@
             simulateWin: document.getElementById('simulate-win'),
             simulateLoss: document.getElementById('simulate-loss'),
             openExchange: document.getElementById('open-exchange'),
-            closeExchange: document.getElementById('close-exchange')
+            closeExchange: document.getElementById('close-exchange'),
+            launchDateInput: document.getElementById('launch-date'),
+            setLaunchDate: document.getElementById('set-launch-date')
         };
 
         // Initialize the game
@@ -1066,11 +1157,12 @@
             setTimeout(() => {
                 updateUI();
                 setupEventListeners();
-                fetchRealTimePrices(); // Use real-time price API
+                fetchPrices(); // Initial fetch
+                setupWebSocketPrices(); // Setup real-time WebSocket connection
                 generateReferralLink();
                 renderStagesList();
                 renderHistoryList();
-                updateExchangeCountdown();
+                startPriceTickerAnimation(); // Start auto-scrolling price ticker
                 
                 // Check if user is admin (for demo purposes, you would have proper auth in production)
                 const urlParams = new URLSearchParams(window.location.search);
@@ -1089,13 +1181,40 @@
                 
                 // Update exchange UI
                 updateExchangeUI();
-            }, 3000); // Increased splash screen time for better effect
+                
+                // Start countdown timer if launch date is set
+                if (gameState.launchDate) {
+                    startCountdown();
+                }
+                
+                // Automatically populate LOT amount with full balance when exchange page loads
+                elements.maxLot.addEventListener('click', setMaxLot);
+                setMaxLot(); // Set max amount immediately
+            }, 3000);
+        }
+
+        // Auto-scroll price ticker
+        function startPriceTickerAnimation() {
+            const ticker = elements.priceTicker;
+            const container = document.getElementById('price-ticker');
+            let scrollPosition = 0;
+            
+            function scroll() {
+                scrollPosition += 0.5; // Adjust speed as needed
+                if (scrollPosition >= container.scrollWidth / 2) {
+                    scrollPosition = 0;
+                }
+                container.scrollLeft = scrollPosition;
+                requestAnimationFrame(scroll);
+            }
+            
+            requestAnimationFrame(scroll);
         }
 
         // Show splash screen
         function showSplashScreen() {
             elements.splashScreen.style.display = 'flex';
-            document.body.style.overflow = 'hidden'; // Prevent scrolling during splash
+            document.body.style.overflow = 'hidden';
         }
 
         // Hide splash screen
@@ -1103,7 +1222,7 @@
             elements.splashScreen.style.opacity = '0';
             setTimeout(() => {
                 elements.splashScreen.style.display = 'none';
-                document.body.style.overflow = ''; // Re-enable scrolling
+                document.body.style.overflow = '';
             }, 500);
         }
 
@@ -1157,31 +1276,11 @@
             }
         }
 
-        // Update exchange countdown timer
-        function updateExchangeCountdown() {
-            const now = new Date();
-            const diff = gameState.settings.exchangeLaunchTime - now;
-            
-            if (diff <= 0) {
-                elements.exchangeCountdown.textContent = "Exchange is now open!";
-                gameState.exchangeOpen = true;
-                updateExchangeUI();
-                return;
-            }
-            
-            const hours = Math.floor(diff / (1000 * 60 * 60));
-            const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
-            const seconds = Math.floor((diff % (1000 * 60)) / 1000);
-            
-            elements.exchangeCountdown.textContent = `Exchange opens in: ${hours}h ${minutes}m ${seconds}s`;
-            
-            setTimeout(updateExchangeCountdown, 1000);
-        }
-
         // Update exchange UI based on state
         function updateExchangeUI() {
             elements.currentLotPrice.textContent = gameState.settings.lotPrice.toFixed(5);
             elements.lotPrice.textContent = gameState.settings.lotPrice.toFixed(5);
+            elements.lotPrice2.textContent = gameState.settings.lotPrice.toFixed(5);
             
             if (gameState.exchangeOpen) {
                 elements.exchangeStatusMessage.textContent = "Exchange is open! You can convert your LOT to TON.";
@@ -1189,7 +1288,17 @@
                 elements.maxLot.disabled = !gameState.walletConnected;
                 elements.exchangeBtn.disabled = !gameState.walletConnected;
             } else {
-                elements.exchangeStatusMessage.textContent = "Exchange is currently closed. Please check back later.";
+                if (gameState.launchDate) {
+                    const now = new Date();
+                    if (now < gameState.launchDate) {
+                        const hoursRemaining = Math.floor((gameState.launchDate - now) / (1000 * 60 * 60));
+                        elements.exchangeStatusMessage.textContent = `Exchange will open in ${hoursRemaining} hours (${gameState.launchDate.toLocaleString()})`;
+                    } else {
+                        elements.exchangeStatusMessage.textContent = "Exchange is currently closed. Please check back later.";
+                    }
+                } else {
+                    elements.exchangeStatusMessage.textContent = "Exchange is currently closed. Please check back later.";
+                }
                 elements.lotAmount.disabled = true;
                 elements.maxLot.disabled = true;
                 elements.exchangeBtn.disabled = true;
@@ -1225,7 +1334,16 @@
             
             // Navigation
             document.querySelectorAll('.nav-btn').forEach(btn => {
-                btn.addEventListener('click', () => switchPage(btn.dataset.page));
+                btn.addEventListener('click', () => {
+                    switchPage(btn.dataset.page);
+                    // Auto-scroll to top when switching pages
+                    window.scrollTo({ top: 0, behavior: 'smooth' });
+                    
+                    // When exchange page is shown, set max LOT amount
+                    if (btn.dataset.page === 'exchange') {
+                        setMaxLot();
+                    }
+                });
             });
             
             // Exchange
@@ -1307,113 +1425,57 @@
                 
                 elements.openExchange.addEventListener('click', () => {
                     gameState.exchangeOpen = true;
-                    gameState.settings.exchangeLaunchTime = new Date(); // Set to now
                     updateExchangeUI();
-                    updateExchangeCountdown();
                     addHistoryEntry('Admin', 'Exchange opened');
                     showResultModal('Exchange Opened', 'The LOT to TON exchange is now open!');
                 });
                 
                 elements.closeExchange.addEventListener('click', () => {
                     gameState.exchangeOpen = false;
-                    gameState.settings.exchangeLaunchTime = new Date(Date.now() + 76 * 60 * 60 * 1000); // Reset to 76 hours
                     updateExchangeUI();
-                    updateExchangeCountdown();
                     addHistoryEntry('Admin', 'Exchange closed');
                     showResultModal('Exchange Closed', 'The LOT to TON exchange is now closed.');
+                });
+                
+                elements.setLaunchDate.addEventListener('click', () => {
+                    const dateString = elements.launchDateInput.value;
+                    if (dateString) {
+                        gameState.launchDate = new Date(dateString);
+                        updateExchangeUI();
+                        startCountdown();
+                        addHistoryEntry('Admin', `Launch date set to ${gameState.launchDate}`);
+                        showResultModal('Launch Date Set', `Exchange will open on ${gameState.launchDate}`);
+                    }
                 });
             }
         }
 
-        // Fetch real-time cryptocurrency prices from Binance API
-        async function fetchRealTimePrices() {
-            try {
-                // Binance API endpoints for the cryptocurrencies
-                const endpoints = {
-                    btc: 'https://api.binance.com/api/v3/ticker/price?symbol=BTCUSDT',
-                    eth: 'https://api.binance.com/api/v3/ticker/price?symbol=ETHUSDT',
-                    bnb: 'https://api.binance.com/api/v3/ticker/price?symbol=BNBUSDT',
-                    sol: 'https://api.binance.com/api/v3/ticker/price?symbol=SOLUSDT',
-                    ton: 'https://api.binance.com/api/v3/ticker/price?symbol=TONUSDT'
-                };
+        // Start countdown to launch
+        function startCountdown() {
+            if (!gameState.launchDate) return;
+            
+            function updateCountdown() {
+                const now = new Date();
+                const diff = gameState.launchDate - now;
                 
-                // Fetch all prices in parallel
-                const responses = await Promise.all([
-                    fetch(endpoints.btc),
-                    fetch(endpoints.eth),
-                    fetch(endpoints.bnb),
-                    fetch(endpoints.sol),
-                    fetch(endpoints.ton)
-                ]);
+                if (diff <= 0) {
+                    elements.countdownTimer.textContent = "Launch time reached!";
+                    return;
+                }
                 
-                // Parse responses
-                const data = await Promise.all(responses.map(res => res.json()));
+                // Calculate days, hours, minutes, seconds
+                const days = Math.floor(diff / (1000 * 60 * 60 * 24));
+                const hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+                const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+                const seconds = Math.floor((diff % (1000 * 60)) / 1000);
                 
-                // Update prices in the UI
-                elements.priceTicker.btc.textContent = parseFloat(data[0].price).toFixed(2);
-                elements.priceTicker.eth.textContent = parseFloat(data[1].price).toFixed(2);
-                elements.priceTicker.bnb.textContent = parseFloat(data[2].price).toFixed(2);
-                elements.priceTicker.sol.textContent = parseFloat(data[3].price).toFixed(2);
-                elements.priceTicker.ton.textContent = parseFloat(data[4].price).toFixed(2);
+                elements.countdownTimer.textContent = `Launch in: ${days}d ${hours}h ${minutes}m ${seconds}s`;
                 
-                // Update LOT price based on market conditions (simulated)
-                // In a real app, this would come from your token's actual market price
-                const marketVariation = 0.9 + Math.random() * 0.2; // Random variation between 0.9 and 1.1
-                gameState.settings.lotPrice = 0.00026 * marketVariation;
-                elements.lotPrice.textContent = gameState.settings.lotPrice.toFixed(5);
-                elements.currentLotPrice.textContent = gameState.settings.lotPrice.toFixed(5);
-                
-            } catch (error) {
-                console.error('Error fetching real-time prices:', error);
-                // Fallback to CoinGecko API if Binance fails
-                fetchPrices();
+                // Update every second
+                setTimeout(updateCountdown, 1000);
             }
             
-            // Update prices every 10 seconds for real-time feel
-            setTimeout(fetchRealTimePrices, 10000);
-        }
-
-        // Fallback to CoinGecko API if Binance fails
-        async function fetchPrices() {
-            try {
-                const response = await fetch('https://api.coingecko.com/api/v3/simple/price?ids=bitcoin,ethereum,binancecoin,solana,the-open-network&vs_currencies=usd');
-                const data = await response.json();
-                
-                elements.priceTicker.btc.textContent = data.bitcoin.usd.toFixed(2);
-                elements.priceTicker.eth.textContent = data.ethereum.usd.toFixed(2);
-                elements.priceTicker.bnb.textContent = data.binancecoin.usd.toFixed(2);
-                elements.priceTicker.sol.textContent = data.solana.usd.toFixed(2);
-                elements.priceTicker.ton.textContent = data['the-open-network'].usd.toFixed(2);
-                
-                // Update LOT price based on market conditions (simulated)
-                const marketVariation = 0.9 + Math.random() * 0.2;
-                gameState.settings.lotPrice = 0.00026 * marketVariation;
-                elements.lotPrice.textContent = gameState.settings.lotPrice.toFixed(5);
-                elements.currentLotPrice.textContent = gameState.settings.lotPrice.toFixed(5);
-                
-            } catch (error) {
-                console.error('Error fetching prices:', error);
-                // Fallback to simulated prices if API fails
-                const prices = {
-                    btc: (103700 + Math.random() * 1000).toFixed(2), // Current BTC price around $103,700
-                    eth: (5000 + Math.random() * 200).toFixed(2),
-                    bnb: (300 + Math.random() * 20).toFixed(2),
-                    sol: (100 + Math.random() * 10).toFixed(2),
-                    ton: (2 + Math.random() * 0.2).toFixed(2)
-                };
-                
-                elements.priceTicker.btc.textContent = prices.btc;
-                elements.priceTicker.eth.textContent = prices.eth;
-                elements.priceTicker.bnb.textContent = prices.bnb;
-                elements.priceTicker.sol.textContent = prices.sol;
-                elements.priceTicker.ton.textContent = prices.ton;
-                
-                // Update LOT price with simulated variation
-                const marketVariation = 0.9 + Math.random() * 0.2;
-                gameState.settings.lotPrice = 0.00026 * marketVariation;
-                elements.lotPrice.textContent = gameState.settings.lotPrice.toFixed(5);
-                elements.currentLotPrice.textContent = gameState.settings.lotPrice.toFixed(5);
-            }
+            updateCountdown();
         }
 
         // Use tickets to participate in draw
@@ -1828,9 +1890,6 @@
             const tonPrice = parseFloat(elements.priceTicker.ton.textContent);
             const tonAmount = (lotAmount * gameState.settings.lotPrice) / tonPrice;
             
-            // Calculate fee in TON ($0.5 worth of TON)
-            const feeInTon = gameState.settings.exchangeFee / tonPrice;
-            
             // Move LOT to pending exchange
             gameState.lotBalance -= lotAmount;
             gameState.pendingExchangeAmount += lotAmount;
@@ -1841,7 +1900,7 @@
             // Show confirmation
             showResultModal('Exchange Requested', 
                 `You've requested to exchange ${lotAmount} LOT to approximately ${tonAmount.toFixed(6)} TON.\n\n` +
-                `A gas fee of $0.5 (≈${feeInTon.toFixed(6)} TON) will be deducted from your wallet when processed.`);
+                `The exchange will be processed during the next exchange window.`);
             
             // Reset form
             elements.lotAmount.value = '';
@@ -1851,9 +1910,146 @@
             updateUI();
         }
 
+        // Fetch crypto prices from CoinGecko API
+        async function fetchPrices() {
+            try {
+                const response = await fetch('https://api.coingecko.com/api/v3/simple/price?ids=bitcoin,ethereum,binancecoin,solana,the-open-network&vs_currencies=usd');
+                const data = await response.json();
+                
+                updatePriceDisplay('btc', data.bitcoin.usd);
+                updatePriceDisplay('eth', data.ethereum.usd);
+                updatePriceDisplay('bnb', data.binancecoin.usd);
+                updatePriceDisplay('sol', data.solana.usd);
+                updatePriceDisplay('ton', data['the-open-network'].usd);
+                
+                // Update duplicate prices for ticker
+                updatePriceDisplay('btc2', data.bitcoin.usd);
+                updatePriceDisplay('eth2', data.ethereum.usd);
+                updatePriceDisplay('bnb2', data.binancecoin.usd);
+                updatePriceDisplay('sol2', data.solana.usd);
+                updatePriceDisplay('ton2', data['the-open-network'].usd);
+                
+                // Update LOT price based on market conditions (simulated)
+                // In a real app, this would come from your token's actual market price
+                const marketVariation = 0.9 + Math.random() * 0.2; // Random variation between 0.9 and 1.1
+                gameState.settings.lotPrice = 0.00016 * marketVariation; // Changed from 0.00026 to 0.00016 as requested
+                updatePriceDisplay('lot', gameState.settings.lotPrice);
+                updatePriceDisplay('lot2', gameState.settings.lotPrice);
+                elements.currentLotPrice.textContent = gameState.settings.lotPrice.toFixed(5);
+                
+            } catch (error) {
+                console.error('Error fetching prices from CoinGecko:', error);
+                // Fallback to simulated prices if API fails
+                const prices = {
+                    btc: (103700 + (Math.random() * 2000 - 1000)).toFixed(2),
+                    eth: (3500 + (Math.random() * 200 - 100)).toFixed(2),
+                    bnb: (500 + (Math.random() * 20 - 10)).toFixed(2),
+                    sol: (150 + (Math.random() * 10 - 5)).toFixed(2),
+                    ton: (5 + (Math.random() * 0.5 - 0.25)).toFixed(2)
+                };
+                
+                updatePriceDisplay('btc', prices.btc);
+                updatePriceDisplay('eth', prices.eth);
+                updatePriceDisplay('bnb', prices.bnb);
+                updatePriceDisplay('sol', prices.sol);
+                updatePriceDisplay('ton', prices.ton);
+                
+                // Update duplicate prices for ticker
+                updatePriceDisplay('btc2', prices.btc);
+                updatePriceDisplay('eth2', prices.eth);
+                updatePriceDisplay('bnb2', prices.bnb);
+                updatePriceDisplay('sol2', prices.sol);
+                updatePriceDisplay('ton2', prices.ton);
+                
+                // Update LOT price with simulated variation
+                const marketVariation = 0.9 + Math.random() * 0.2;
+                gameState.settings.lotPrice = 0.00016 * marketVariation; // Changed from 0.00026 to 0.00016 as requested
+                updatePriceDisplay('lot', gameState.settings.lotPrice);
+                updatePriceDisplay('lot2', gameState.settings.lotPrice);
+                elements.currentLotPrice.textContent = gameState.settings.lotPrice.toFixed(5);
+            }
+            
+            // Update prices every 30 seconds
+            setTimeout(fetchPrices, 30000);
+        }
+
+        // Update price display with animation and arrow indicators
+        function updatePriceDisplay(coin, newPrice) {
+            const element = elements.priceTicker[coin];
+            const arrowElement = elements.priceTicker[`${coin}Arrow`];
+            const oldPrice = parseFloat(element.textContent) || 0;
+            
+            // Format new price
+            let formattedPrice;
+            if (coin === 'lot' || coin === 'lot2') {
+                formattedPrice = parseFloat(newPrice).toFixed(5);
+            } else {
+                formattedPrice = parseFloat(newPrice).toFixed(2);
+            }
+            
+            // Store previous price for comparison
+            if (oldPrice > 0) {
+                gameState.previousPrices[coin] = oldPrice;
+            }
+            
+            // Update display
+            element.textContent = formattedPrice;
+            
+            // Add visual indicator if we have previous price
+            if (gameState.previousPrices[coin]) {
+                const priceElement = element.parentElement;
+                priceElement.classList.remove('up', 'down');
+                arrowElement.textContent = '';
+                
+                if (newPrice > gameState.previousPrices[coin]) {
+                    priceElement.classList.add('up');
+                    arrowElement.textContent = '↑';
+                } else if (newPrice < gameState.previousPrices[coin]) {
+                    priceElement.classList.add('down');
+                    arrowElement.textContent = '↓';
+                } else {
+                    arrowElement.textContent = '→';
+                }
+                
+                // Remove class after animation
+                setTimeout(() => {
+                    priceElement.classList.remove('up', 'down');
+                }, 1000);
+            }
+        }
+
+        // Setup WebSocket connection for real-time prices (using Binance as example)
+        function setupWebSocketPrices() {
+            const coins = {
+                btc: 'btcusdt',
+                eth: 'ethusdt',
+                bnb: 'bnbusdt',
+                sol: 'solusdt',
+                ton: 'tonusdt'
+            };
+            
+            Object.entries(coins).forEach(([coin, pair]) => {
+                const ws = new WebSocket(`wss://stream.binance.com:9443/ws/${pair}@ticker`);
+                
+                ws.onmessage = (event) => {
+                    const data = JSON.parse(event.data);
+                    const price = parseFloat(data.c); // Current price
+                    
+                    if (coin === 'btc' || coin === 'eth' || coin === 'bnb' || coin === 'sol' || coin === 'ton') {
+                        updatePriceDisplay(coin, price);
+                        updatePriceDisplay(`${coin}2`, price); // Update duplicate ticker
+                    }
+                };
+                
+                ws.onerror = (error) => {
+                    console.error(`WebSocket error for ${coin}:`, error);
+                };
+            });
+        }
+
         // Reset user data
         function resetUserData() {
-            gameState.lotBalance = 0;
+            gameState.lotBalance = 0; // Changed from 12000 to 0 as requested
             gameState.tickets = 20;
             gameState.scratchCards = 0;
             gameState.referrals = 0;
@@ -1873,4 +2069,4 @@
         window.addEventListener('DOMContentLoaded', initGame);
     </script>
 </body>
-</html>
+</html>       
